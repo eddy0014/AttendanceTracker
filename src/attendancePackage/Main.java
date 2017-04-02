@@ -53,6 +53,9 @@ public class Main extends JFrame {
 			}
 		});
 		
+		// Create the menu items for existing courses
+		getCourses();
+		
 		// Add the panel that will hold everything
 		parentPanel = new JPanel();
 		parentPanel.setSize(500, 500); 
@@ -66,7 +69,29 @@ public class Main extends JFrame {
 		// This can be used to make the menu look cleaner
 		//menu.addSeparator();
 		
+		
+		
 		setVisible(true);
+	}
+	
+	public void getCourses() {
+		ResultSet allCourses = db.getAllCourses();
+		
+		try {
+			while(allCourses.next()) {
+				String courseNumber = allCourses.getString("course_num");
+				JMenuItem courseMenuItem = new JMenuItem(courseNumber);
+				menu.add(courseMenuItem);
+				
+				courseMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						displayCourseHomePanel(courseNumber);
+					}
+				});				
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void addCourse() {
@@ -96,17 +121,33 @@ public class Main extends JFrame {
 		if(userButtonChoice == JOptionPane.OK_OPTION) {
 			// Add the course to the database
 			db.addCourse(courseNum, courseName);
+			
+			// Add the new course to the menu and add ActionListener to it
+			JMenuItem newCourseItem = new JMenuItem(courseNum);
+			menu.add(newCourseItem);
+			newCourseItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					displayCourseHomePanel(courseNum);
+				}
+			});	
+			
 			displayCourseHomePanel(courseNum);
 		} else {
 			// Do nothing
 		}
 	}
 	
+	JPanel parentCoursePanel = new JPanel();
+	
 	public void displayCourseHomePanel(String courseNum) {
 		parentPanel.setVisible(false);
 		
+		// Remove any components in the panel
+		parentCoursePanel.removeAll();
+		parentCoursePanel.repaint();
+				
 		// The panel that will hold the left and right panels
-		JPanel parentCoursePanel = new JPanel();
+		//JPanel parentCoursePanel = new JPanel();
 		parentCoursePanel.setLayout(new BoxLayout(parentCoursePanel, BoxLayout.LINE_AXIS));
 		parentCoursePanel.setSize(500, 500);
 				
@@ -168,10 +209,13 @@ public class Main extends JFrame {
 			}
 		});
 		
-		// Add the new course to the menu
-		menu.add(new JMenuItem(courseNum));
+		// Apply changes to panel
+		parentCoursePanel.revalidate();
+		parentCoursePanel.repaint();
 		
+		// Add the parent panel to the frame
 		add(parentCoursePanel);
+		
 	}
 	
 	public void displayManagePanel(String courseNum) {

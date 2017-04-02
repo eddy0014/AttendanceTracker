@@ -55,6 +55,22 @@ public class Driver {
 		}
 	}
 	
+	public ResultSet getAllCourses() {
+		ResultSet allCourses = null;
+		
+		try{
+			Statement theStatement = dbConnection.createStatement();
+			
+			String query = "select * from courses";
+			
+			allCourses = theStatement.executeQuery(query);
+		} catch(Exception e) {
+			e.printStackTrace(); 
+		}
+		
+		return allCourses;
+	}
+	
 	public ResultSet selectStudentsInCourse(String courseNum) {
 		ResultSet results = null;
 		
