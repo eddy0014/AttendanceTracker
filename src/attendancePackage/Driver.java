@@ -29,7 +29,6 @@ public class Driver {
 		}		
 	}
 	
-	//TODO add code to create attendance table for the course
 	public void addCourse(String courseNum, String courseName) {
 		try {
 			// Create a statement
@@ -45,7 +44,7 @@ public class Driver {
 			String createTable = "create table " + courseNumLower + " (student_id int, first_name tinytext, last_name tinytext)";
 			
 			// Create the attendance table for the course
-			String createAttendTable = "create table attendance_" + courseNumLower + " (student_id int, first_name tinytext, last_name tinytext, status tinytext)";
+			String createAttendTable = "create table attendance_" + courseNumLower + " (student_id int, first_name tinytext, last_name tinytext, status tinytext, status_date date)";
 			
 			// Execute queries
 			int rowsAffected = theStatement.executeUpdate(insertCourse); 
@@ -124,13 +123,16 @@ public class Driver {
 		}
 	}
 	
-	public void insertIntoAttend(String courseNum, int id, String firstName, String lastName, String statusLabel) {
+	public void insertIntoAttend(String courseNum, int id, String firstName, String lastName, String statusLabel, int monthSelected, int daySelected, int yearSelected) {
 		try {
 			Statement theStatement = dbConnection.createStatement();
 			
 			String courseNumLower = courseNum.toLowerCase();
-			String query = "insert into attendance_" + courseNumLower + " (student_id, first_name, last_name, status) values "
-					+ "(" + id + "," + "\"" + firstName + "\"" + "," + "\"" +  lastName + "\"" + "," + "\"" + statusLabel + "\"" + ")";
+			String query = "insert into attendance_" + courseNumLower + " (student_id, first_name, last_name, status, status_date) values "
+					+ "(" + id + "," + "\"" + firstName + "\"" + "," + "\"" +  lastName + "\"" + "," + "\"" + statusLabel + "\"" + "," 
+					//+ " TO_DATE('" + monthSelected + "-" + daySelected + "-" + yearSelected + "', '%m/%d/%Y'))";
+					+ "'" + yearSelected + "-" + monthSelected + "-" + daySelected + "')";
+			System.out.println(query);
 			
 			int rowsAffected = theStatement.executeUpdate(query); 
 		} catch (Exception e) {

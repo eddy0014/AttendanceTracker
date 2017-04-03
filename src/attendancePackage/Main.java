@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 import java.sql.*;
+import java.util.*;
 
 public class Main extends JFrame {
 	
@@ -83,6 +84,7 @@ public class Main extends JFrame {
 				
 				courseMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
+						System.out.println("Clicked on courseMenuItem with " + courseNumber);
 						displayCourseHomePanel(courseNumber);
 					}
 				});				
@@ -141,8 +143,6 @@ public class Main extends JFrame {
 	JPanel rightCoursePanel = new JPanel();
 	JPanel managePanel = new JPanel();
 	JPanel takePanel = new JPanel();
-	JButton takeButton = new JButton("Take Attendance");
-	JButton manageButton = new JButton("Manage Students");
 	
 	public void displayCourseHomePanel(String courseNum) {
 		parentPanel.setVisible(false);
@@ -162,24 +162,14 @@ public class Main extends JFrame {
 		leftCoursePanel.setPreferredSize(new Dimension(25, 500));
 		leftCoursePanel.setBackground(Color.orange);
 		leftCoursePanel.add(new JLabel(courseNum));
+		JButton takeButton = new JButton("Take Attendance");
+		JButton manageButton = new JButton("Manage Students");
 		leftCoursePanel.add(takeButton);
 		leftCoursePanel.add(manageButton);
 		parentCoursePanel.add(leftCoursePanel);
 		rightCoursePanel.setPreferredSize(new Dimension(250, 500));
 		rightCoursePanel.setBackground(Color.red);
 		parentCoursePanel.add(rightCoursePanel);
-		
-		// Add ActionListeners
-		manageButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				displayManagePanel(courseNum);
-			}
-		});
-		takeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				displayTakeAttPanel(courseNum);
-			}
-		});
 		
 		// Apply changes to panel
 		parentCoursePanel.revalidate();
@@ -192,6 +182,19 @@ public class Main extends JFrame {
 		// Add the parent panel to the frame
 		add(parentCoursePanel);
 		
+		// Add ActionListeners
+		manageButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				System.out.println("Clicked on manageButton with " + courseNum);
+				displayManagePanel(courseNum);
+			}
+		});
+		takeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				System.out.println("Clicked on takeButton with " + courseNum);
+				displayTakeAttPanel(courseNum);
+			}
+		});		
 	}
 	
 	public void displayManagePanel(String courseNum) {
@@ -249,6 +252,19 @@ public class Main extends JFrame {
 		
 		ResultSet studentsInCourse = db.selectStudentsInCourse(courseNum);
 		
+		// Set up combo boxes for the date
+		String[] months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+		String[] days = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
+		String[] years = {"2017", "2018", "2019", "2020", "2021", "2022"};
+		JComboBox monthBox = new JComboBox(months);
+		JComboBox dayBox = new JComboBox(days);
+		JComboBox yearBox = new JComboBox(years);
+		JPanel comboBoxPanel = new JPanel(new FlowLayout());
+		comboBoxPanel.add(monthBox);
+		comboBoxPanel.add(dayBox);
+		comboBoxPanel.add(yearBox);
+		takePanel.add(comboBoxPanel);
+		
 		try {
 			while(studentsInCourse.next()) {
 				JPanel pane = new JPanel();
@@ -282,8 +298,11 @@ public class Main extends JFrame {
 						String firstName = studentsInCourse2.getString("first_name");
 						String lastName = studentsInCourse2.getString("last_name");
 						String statusLabel = (String) comboArray[j].getSelectedItem();
+						int monthSelected = monthBox.getSelectedIndex() + 1;
+						int daySelected = Integer.parseInt((String) dayBox.getSelectedItem());
+						int yearSelected = Integer.parseInt((String) yearBox.getSelectedItem());
 						
-						db.insertIntoAttend(courseNum, studentID, firstName, lastName, statusLabel);  
+						db.insertIntoAttend(courseNum, studentID, firstName, lastName, statusLabel, monthSelected, daySelected, yearSelected);  
 						
 						j++;
 					}
