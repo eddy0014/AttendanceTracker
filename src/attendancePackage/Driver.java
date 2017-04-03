@@ -2,6 +2,8 @@ package attendancePackage;
 
 import java.sql.*;
 
+import javax.swing.JLabel;
+
 public class Driver {
 	
 	Connection dbConnection;

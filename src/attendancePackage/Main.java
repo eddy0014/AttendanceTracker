@@ -69,8 +69,6 @@ public class Main extends JFrame {
 		// This can be used to make the menu look cleaner
 		//menu.addSeparator();
 		
-		
-		
 		setVisible(true);
 	}
 	
@@ -131,6 +129,7 @@ public class Main extends JFrame {
 				}
 			});	
 			
+			// User goes directly to course home after creating course
 			displayCourseHomePanel(courseNum);
 		} else {
 			// Do nothing
@@ -138,80 +137,57 @@ public class Main extends JFrame {
 	}
 	
 	JPanel parentCoursePanel = new JPanel();
+	JPanel leftCoursePanel = new JPanel();
+	JPanel rightCoursePanel = new JPanel();
+	JPanel managePanel = new JPanel();
+	JPanel takePanel = new JPanel();
+	JButton takeButton = new JButton("Take Attendance");
+	JButton manageButton = new JButton("Manage Students");
 	
 	public void displayCourseHomePanel(String courseNum) {
 		parentPanel.setVisible(false);
 		
-		// Remove any components in the panel
+		// Remove any components in the panels
 		parentCoursePanel.removeAll();
 		parentCoursePanel.repaint();
-				
-		// The panel that will hold the left and right panels
-		//JPanel parentCoursePanel = new JPanel();
+		leftCoursePanel.removeAll();
+		leftCoursePanel.repaint();
+		rightCoursePanel.removeAll();
+		rightCoursePanel.repaint();
+		
+		
+		// Set up layout for course home 
 		parentCoursePanel.setLayout(new BoxLayout(parentCoursePanel, BoxLayout.LINE_AXIS));
 		parentCoursePanel.setSize(500, 500);
-				
-		// The panel displaying the buttons for options
-		JPanel leftCoursePanel = new JPanel();
 		leftCoursePanel.setPreferredSize(new Dimension(25, 500));
 		leftCoursePanel.setBackground(Color.orange);
 		leftCoursePanel.add(new JLabel(courseNum));
-		
-		// Set the buttons
-		JButton takeButton = new JButton("Take Attendance");
 		leftCoursePanel.add(takeButton);
-		JButton manageButton = new JButton("Manage Students");
 		leftCoursePanel.add(manageButton);
-		
 		parentCoursePanel.add(leftCoursePanel);
-	
-		// The panel displaying the content
-		JPanel rightCoursePanel = new JPanel();
 		rightCoursePanel.setPreferredSize(new Dimension(250, 500));
 		rightCoursePanel.setBackground(Color.red);
 		parentCoursePanel.add(rightCoursePanel);
 		
+		// Add ActionListeners
 		manageButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				JPanel managePanel = new JPanel();
-				managePanel.setBackground(Color.cyan);
-				managePanel.setPreferredSize(new Dimension(rightCoursePanel.getWidth(), rightCoursePanel.getHeight())); 
-				
-				ResultSet courseStudents = db.selectStudentsInCourse(courseNum); 
-				
-				try { 
-				while(courseStudents.next()) {
-					// TODO fix this so it matches database table in columns
-					managePanel.add(new JLabel(courseStudents.getString("first_name") + " " + courseStudents.getString("last_name")));
-				}
-				} catch (Exception e) {
-					e.printStackTrace(); 
-				}
-				
-				JButton addStudentButton = new JButton("Add student");
-				managePanel.add(addStudentButton);
-				
-				addStudentButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						addStudent(courseNum);
-					}
-				});
-				
-				rightCoursePanel.add(managePanel);
-				rightCoursePanel.revalidate();
-				rightCoursePanel.repaint();
+				displayManagePanel(courseNum);
 			}
 		});
-		
 		takeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				displayTakeAttPanel(courseNum, rightCoursePanel);
+				displayTakeAttPanel(courseNum);
 			}
 		});
 		
 		// Apply changes to panel
 		parentCoursePanel.revalidate();
 		parentCoursePanel.repaint();
+		leftCoursePanel.revalidate();
+		leftCoursePanel.repaint();
+		rightCoursePanel.revalidate();
+		rightCoursePanel.repaint();
 		
 		// Add the parent panel to the frame
 		add(parentCoursePanel);
@@ -219,12 +195,48 @@ public class Main extends JFrame {
 	}
 	
 	public void displayManagePanel(String courseNum) {
+		// Remove any components in the panels
+		rightCoursePanel.removeAll();
+		rightCoursePanel.repaint();
+		managePanel.removeAll();
+		managePanel.repaint();
 		
+		// Set up layout for manage panel
+		managePanel.setLayout(new BoxLayout(managePanel, BoxLayout.PAGE_AXIS));
+		managePanel.setBackground(Color.cyan);
+		managePanel.setPreferredSize(new Dimension(rightCoursePanel.getWidth(), rightCoursePanel.getHeight())); 
+		
+		ResultSet courseStudents = db.selectStudentsInCourse(courseNum); 
+		
+		try { 
+		while(courseStudents.next()) {
+			managePanel.add(new JLabel(courseStudents.getString("student_id") + " " + courseStudents.getString("first_name") + " " + courseStudents.getString("last_name")));
+		}
+		} catch (Exception e) {
+			e.printStackTrace(); 
+		}
+		
+		JButton addStudentButton = new JButton("Add student");
+		managePanel.add(addStudentButton);
+		addStudentButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				addStudent(courseNum);
+			}
+		});
+		
+		managePanel.revalidate();
+		managePanel.repaint();
+		rightCoursePanel.add(managePanel);
+		rightCoursePanel.revalidate();
+		rightCoursePanel.repaint();
 	}
 	
-	public void displayTakeAttPanel(String courseNum, JPanel rightCoursePanel) {
-		// Set up panel layout
-		JPanel takePanel = new JPanel();
+	public void displayTakeAttPanel(String courseNum) {
+		rightCoursePanel.removeAll();
+		rightCoursePanel.repaint();
+		takePanel.removeAll();
+		takePanel.repaint();
+		
 		takePanel.setLayout(new BoxLayout(takePanel, BoxLayout.PAGE_AXIS));
 		takePanel.setBackground(Color.cyan);
 		takePanel.setPreferredSize(new Dimension(rightCoursePanel.getWidth(), rightCoursePanel.getHeight())); 
@@ -314,6 +326,8 @@ public class Main extends JFrame {
 			String lastName = lastNameField.getText();
 			
 			db.addStudent(courseNum, id, firstName, lastName); 
+			
+			displayManagePanel(courseNum);
 		} else {
 			// Do nothing
 		}
